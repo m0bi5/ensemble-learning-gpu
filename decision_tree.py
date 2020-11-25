@@ -130,66 +130,45 @@ def recursive_tree_train(data, labels, depth, max_depth, num_classes):
     :rtype: dict
     """
     # TODO: INSERT YOUR CODE FOR LEARNING THE DECISION TREE STRUCTURE HERE
+    class_count = np.zeros(num_classes)
     d, n = data.shape
-    classes = np.unique(labels)
-    #num_classes = classes.size
-    # If Data is all in one class or the max depth is reached 
-    #node = {}
-    #node['classes']= classes
-    
-    node = Node
-    if (num_classes <2 or  max_depth<= depth):
-        #print(num_classes)
-        #print(depth)
-        #node.prection = most common class in D
-        #node['test']=None
-        #node['left']=None
-        #node['right'] = None
-        #node['label']=classes
-        #node ['leaf']= True
-        #node.right=None
-        #node.left= None
-        #node.test=None
-        #print(classes)
-        node.label=classes
-        node.leaf = True
-        #print (node.label)
-        return node
-    # rule = bestDecisionRule(D)
-    rule = calculate_information_gain(data, labels)
-    #print(rule)
-    #print (rule.size)
-    #print(d)
-    # This is the feature column with the max gain that will serve as the split
-    max_gain = np.argmax(rule)
-    #print(max_gain)
-    left_index=np.where(data[max_gain,:]==0)[0]
-    right_index=np.where(data[max_gain,:]!=0)[0]
-    #print(data[max_gain,:]==0)
-   
-    
-    # dataLeft = {(x,y) from D where rule(D) is true }
-    # dataLeft = data, labels, depth, max_depth, num_classes
-    labelLeft = labels[left_index]
-    dataLeft = data[:,left_index]
-    num_classesLeft=np.unique(labelLeft).size
-    # dataRight {(x,y) from D where rule(D) is false }
-    labelRight= labels[right_index]    
-    #print (dataLeft.shape)
-    dataRight = data[:,right_index]   
-    #print(dataRight.shape)
-    num_classesRight=np.unique(labelRight).size
-    #node['label']=None
-    #node['test']= max_gain
-    #node['leaf'] = False
-    #node['left'] =  recursive_tree_train(dataLeft, labelLeft, depth+1, max_depth, num_classesLeft)
-    #node['right'] =  recursive_tree_train(dataRight, labelRight, depth+1, max_depth, num_classesRight)
-    
-    
 
-    node.test=max_gain
-    node.left =  recursive_tree_train(dataLeft, labelLeft, depth+1, max_depth, num_classesLeft)
-    node.right =  recursive_tree_train(dataRight, labelRight, depth+1, max_depth, num_classesRight)
+    for c in range(num_classes):
+        class_count[c] = np.count_nonzero(labels == c)
+
+    prediction = class_count.argmax()
+    max_class_count = class_count[prediction]
+
+    node = dict()
+
+    # check if either max_depth was reached or subset is pure
+    if depth == max_depth or max_class_count == n:
+        node['prediction'] = prediction
+        return node
+
+    # otherwise, split data
+    gain = calculate_information_gain(data, labels)
+    best_word = gain.argmax()
+    best_gain = gain[best_word]
+
+    # check if none of the words provide any information gain
+    if best_gain == 0:
+        node['prediction'] = prediction
+        return node
+
+    # split on best_word
+    true_feature = np.asarray(data[best_word, :]).ravel() > 0
+    true_indices = true_feature.nonzero()[0]
+    false_indices = np.logical_not(true_feature).nonzero()[0]
+
+    left_data = data[:, true_indices]
+    left_labels = labels[true_indices]
+    right_data = data[:, false_indices]
+    right_labels = labels[false_indices]
+
+    node['left'] = recursive_tree_train(left_data, left_labels, depth + 1, max_depth, num_classes)
+    node['right'] = recursive_tree_train(right_data, right_labels, depth + 1, max_depth, num_classes)
+    node['split_feature'] = best_word
     
     return node
 
@@ -206,55 +185,23 @@ def decision_tree_predict(data, model):
     """
     # TODO: INSERT YOUR CODE FOR COMPUTING THE DECISION TREE PREDICTIONS HERE
     d, n = data.shape
-    labels= np.empty(n)
-    #print(list(model))
-    #print(model['right'])
-    #print(model['left'])
-    #print(model['label'])
-    #print(model['test'])
- 
-     
-    #print(len(model['label']))
-    # test for leaf
-    if model.leaf:
-        if model.label.size<1: #terminating node leaf
-           
-            #labels.fill(model['label'][0])
-            #print(model['classes'])
-            return labels
-        else: # max depth leaf
-            labels.fill(np.argmax(model.label))  
-            return labels
-    #ttest if max depth position occured
-    # Test for root 
-    #if model['label'] == None:
-        #rightLabel= decision_tree_predict(data, model['right'])
-        
-   
-    if model.leaf:
-        max_gain = model.test
-        left_index=np.where(data[max_gain,:]==0)[0]
-        right_index=np.where(data[max_gain,:]!=0)[0]
-        #print(np.where(data[max_gain,:]!=0)[0])
-        #print(np.where(data[max_gain,:]==0)[0])
-        dataLeft = data[:,left_index]
-        dataRight = data[:,right_index]   
-    
-      
-        if  model.right == None:
-            return decision_tree_predict(dataLeft, model.left)
-        
-        if   model.left== None:
-            return decision_tree_predict(dataRight, model.right)
+    labels = np.zeros(n)
 
-        
-        rightLabel= decision_tree_predict(dataRight, model.right)
-        leftLabel = decision_tree_predict(dataLeft, model.left)
-        labels= np.append( leftLabel,rightLabel)
+    if 'prediction' in model:
+        # at a leaf of the tree
+        labels[:] = model['prediction']
+    else:
+        # recurse further down tree
+        true_feature = data[model['split_feature'], :].ravel() > 0
+        left_indices = true_feature.nonzero()[0]
+        right_indices = np.logical_not(true_feature).nonzero()[0]
+        left_data = data[:, left_indices]
+        right_data = data[:, right_indices]
+
+        labels[left_indices] = decision_tree_predict(left_data, model['left'])
+        labels[right_indices] = decision_tree_predict(right_data, model['right'])
+
     
-#check for the root node
-    #if model.label== None and model.leaf== False and model.test ==None:
-        #print(model)
-        #return labels#leftLabel = decision_tree_predict(data, model['left'])
+
 
     return labels
