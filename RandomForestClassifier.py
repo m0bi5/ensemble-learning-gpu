@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 """
-ECE5984 SP20 HW4 Part 2 - Random Forest Classifier
+Random Forest Classifier with Confusion matrix
 Created on Thu Feb 20 17:41:33 2020
 @author: ccody7
 """
@@ -49,7 +49,8 @@ def RandomForest(Xtrain, ytrain, Xtest, ytest):
     ypred = clf.predict(Xtest)
     misclassificationRateOut('RandomForest', Xtest, ytest,ypred)
     
-    
+#ToDo update for minst
+#     
 def main():
     pathName = "C:\\Users\\Cody\\OneDrive\\Documents\\VT\\ECE5984\\hw\\DATASETS\\"
     shuttleFile = 'shuttle.xlsx'

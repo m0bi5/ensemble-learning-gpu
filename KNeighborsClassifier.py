@@ -2,8 +2,7 @@
 
 # -*- coding: utf-8 -*-
 """
-ECE5984 SP20 HW3 Part 2 - wifi signal strength
-Created on 
+KNeighborsClassifier
 @author: ccody7
 """
 from sklearn import neighbors
@@ -12,6 +11,8 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 
+
+## Need to update this to just load the Minst data
 def loadData(pathName):
     dataFrameTrain = pd.read_excel(pathName + 'wifi.xlsx', sheet_name='train')
     dataFrameTest = pd.read_excel(pathName + 'wifi.xlsx', sheet_name='test')
@@ -59,7 +60,7 @@ def PrettyPrint(kValue,errors,confusions):
     
 
 def main():
-    pathName = "C:\\Users\\Cody\\OneDrive\\Documents\\VT\\ECE5984\\hw\\DATASETS\\"
+    pathName = "C:\\Users\\Cody\\OneDrive\\Documents\\VT\\ECE5984\\hw\\DATASETS\\" # Replacw
     trainX, trainY, testX, testY = loadData(pathName)
     kValue = range(1,26)
     error_rateUW=[]

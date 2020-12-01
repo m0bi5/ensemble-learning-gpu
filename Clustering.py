@@ -2,9 +2,7 @@
 
 # -*- coding: utf-8 -*-
 """
-ECE5984 SP20 HW3A - clustering irises
-Created on Thu Feb 20 17:41:33 2020
-@author: crjones4
+Clustering
 """
 from sklearn import neighbors
 import pandas as pd
@@ -67,7 +65,7 @@ def Training(trainX, trainY, newX ):
         
     makeTable(minRow, minDist, minTarget)
   
-  
+ # Can Be cchanged to accomidate diffrent datadset 
 def getData():
     pathName = "C:\\Users\\Cody\\OneDrive\\Documents\\VT\\ECE5984\\hw\\DATASETS\\"
 

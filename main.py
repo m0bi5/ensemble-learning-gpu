@@ -64,7 +64,7 @@ def TestRunTree():
         end_gpu_parallel = timer()
 
         print(
-            'Run Count '+ i +':\n',
+            'Run Count ', i ,':\n',
             "Dataset Size:%f\n"%(train_batch_len),
             "SequentialCPU: %fs, %f acc\n"%(end_cpu_sequential - start_cpu_sequential, cpu_sequential_acc),
             "ParallelCPU: %fs %f acc\n"%(end_cpu_parallel - start_cpu_parallel, cpu_parallel_acc),
