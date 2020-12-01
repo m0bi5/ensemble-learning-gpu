@@ -1,4 +1,5 @@
 import numpy as np
+
 class DecisionTree(object):
     """
     Class to create decision tree model (CART)
@@ -15,7 +16,10 @@ class DecisionTree(object):
         """
         self.feature = _feature
         self.label = _label
+        
         self.train_data = np.column_stack((self.feature,self.label))
+        
+        
         self.build_tree()
 
 
@@ -84,8 +88,9 @@ class DecisionTree(object):
         best_val = 999
         best_score = 999
         best_groups = None
-
+       
         for idx in range(data.shape[1]-1):
+            
             for row in data:
                 groups = self.split(idx, row[idx], data)
                 gini_score = self.compute_gini_similarity(groups,class_labels)
@@ -150,7 +155,9 @@ class DecisionTree(object):
          - call recursive split_branch to build the complete tree
         :return:
         """
+        
         self.root = self.best_split(self.train_data)
+        
         self.split_branch(self.root, 1)
         return self.root
 
@@ -185,17 +192,32 @@ class DecisionTree(object):
             self.predicted_label = np.append(self.predicted_label, self._predict(self.root,idx))
 
         return self.predicted_label
-
+"""
 from tensorflow.keras.datasets import mnist
 (x_train, y_train), (x_test, y_test) = dataset = mnist.load_data(path='mnist.npz')
+print(type(x_train),type(y_train), type(x_test),type(y_test))
+print(x_train.shape,y_train.shape, x_test.shape,y_test.shape)
+
 x_train = x_train.astype("float32") / 255
 x_train = [i.flatten() for i in x_train]
 x_test = x_test.astype("float32") / 255
 x_test = [i.flatten() for i in x_test]
+print(type(x_train),type(y_train), type(x_test),type(y_test))
+print(len(x_train),len(y_train), len(x_test))
+print ( np.unique(np.array(y_train)))
 
-model = DecisionTree(_max_depth = 2, _min_splits = 30)
+"""
+from sklearn.model_selection import train_test_split
+from sklearn.datasets import load_iris,load_digits
+digits = load_digits()
+X = digits.data
+y = digits.target
+x_train, x_test, y_train, y_test = train_test_split(X, y, random_state=0)
+
+model = DecisionTree(_max_depth = 10, _min_splits = 5)
 
 model = model.fit(x_train, y_train)
+
 
 print(accuracy_score(
     y_true=y_test,

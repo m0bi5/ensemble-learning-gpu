@@ -3,6 +3,7 @@ import numpy as np
 import pandas as pd
 import scipy.stats 
 from scipy.stats import norm
+from timeit import default_timer as timer
 class Node: 
     def __init__(self,key): 
         self.left = None
@@ -205,3 +206,30 @@ def decision_tree_predict(data, model):
 
 
     return labels
+
+def main():
+    
+    #from tensorflow.keras.datasets import mnist
+    #(x_train, y_train), (x_test, y_test) = dataset = mnist.load_data(path='mnist.npz')
+    
+    #x_train = x_train.astype("float32") / 255
+    #x_train = [i.flatten() for i in x_train]
+    #x_test = x_test.astype("float32") / 255
+    #x_test = [i.flatten() for i in x_test]
+    # set tree depth to unlimited
+    from sklearn.model_selection import train_test_split
+    from sklearn.datasets import load_iris,load_digits
+    digits = load_digits()
+    X = digits.data
+    y = digits.target
+    x_train, x_test, y_train, y_test = train_test_split(X, y, random_state=0)
+    params = {"max_depth": np.inf}
+    starTestRun = timer()
+    model =decision_tree_train(x_train, y_train, params)
+    
+    
+    endTestRun = timer()
+    print( "Test Run Time : %fs \n"%(endTestRun- starTestRun))
+
+if __name__ == '__main__':
+	main()
