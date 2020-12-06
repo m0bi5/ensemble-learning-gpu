@@ -1,31 +1,26 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-from tensorflow.keras.datasets import mnist
-from tensorflow.keras import utils
-from ensemble import *
+from sklearn.datasets import load_iris
+from sklearn.model_selection import train_test_split
+from decision_tree import DecisionTree
 from sklearn.metrics import accuracy_score
-from timeit import default_timer as timer
-from ensemble import ForestCPU, ForestGPU
+from sklearn.tree import DecisionTreeClassifier
 import numpy as np
 import random
+import time
 
 def TestRunTree():
     #Dataset
-    (x_train, y_train), (x_test, y_test) = dataset = mnist.load_data(path='mnist.npz')
-    classes = 10
+    dataset = load_iris()
+    X = dataset.data
+    y = dataset.target
+    x_train, x_test, y_train, y_test = train_test_split(X, y, random_state=0)
+    classes = 3
     #Classifiers
-    cpu_sequential = DecisionTreeClassifier(max_depth=10)
+    cpu_sequential = DecisionTree(_max_depth = 2, _min_splits = 5)
     cpu_parallel = DecisionTreeClassifier(max_depth=10)
     gpu_sequential = DecisionTreeClassifier(max_depth=10)
     gpu_parallel = DecisionTreeClassifier(max_depth=10)
-    #Scale images to the [0, 1] range
-    x_train = x_train.astype("float32") / 255
-    x_train = [i.flatten() for i in x_train]
-    x_test = x_test.astype("float32") / 255
-    x_test = [i.flatten() for i in x_test]
-    #Convert class vectors to binary class matrices
-    y_train = utils.to_categorical(y_train, classes)
-    y_test = utils.to_categorical(y_test, classes)
     train_dataset = list(zip(x_train, y_train))
     test_dataset = list(zip(x_test, y_test))
     #Use 10% of data, 20%, 30% .....
@@ -39,29 +34,30 @@ def TestRunTree():
         x_train, y_train = zip(*train_batch)
         x_test, y_test = zip(*test_batch)
         #Sequential CPU
-        start_cpu_sequential = timer()
+        start_cpu_sequential = time.time_ns()
         cpu_sequential.fit(x_train, y_train)
         y_pred = cpu_sequential.predict(x_test)
-        cpu_sequential_acc = accuracy_score(np.argmax(y_test, axis=1), np.argmax(y_pred, axis=1))
-        end_cpu_sequential = timer()
+        cpu_sequential_acc = accuracy_score(y_test, y_pred)
+        end_cpu_sequential = time.time_ns()
         #Parallel CPU
-        start_cpu_parallel = timer()
+        start_cpu_parallel = time.time_ns()
         cpu_parallel.fit(x_train, y_train)
         y_pred = cpu_parallel.predict(x_test)
-        cpu_parallel_acc = accuracy_score(np.argmax(y_test, axis=1), np.argmax(y_pred, axis=1))
-        end_cpu_parallel = timer()
+        cpu_parallel_acc = accuracy_score(y_test, y_pred)
+        end_cpu_parallel = time.time_ns()
         #Sequential GPU
-        start_gpu_sequential = timer()
+        start_gpu_sequential = time.time_ns()
         gpu_sequential.fit(x_train, y_train)
+        
         y_pred = gpu_sequential.predict(x_test)
-        gpu_sequential_acc = accuracy_score(np.argmax(y_test, axis=1), np.argmax(y_pred, axis=1))
-        end_gpu_sequential = timer()
+        gpu_sequential_acc = accuracy_score(y_test, y_pred)
+        end_gpu_sequential = time.time_ns()
         #Parallel GPU
-        start_gpu_parallel = timer()
+        start_gpu_parallel = time.time_ns()
         gpu_parallel.fit(x_train, y_train)
         y_pred = gpu_parallel.predict(x_test)
-        gpu_parallel_acc = accuracy_score(np.argmax(y_test, axis=1), np.argmax(y_pred, axis=1))
-        end_gpu_parallel = timer()
+        gpu_parallel_acc = accuracy_score(y_test, y_pred)
+        end_gpu_parallel = time.time_ns()
 
         print(
             'Run Count ', i ,':\n',
@@ -75,9 +71,9 @@ def TestRunTree():
     
 
 def main():
-    starTestRun = timer()
+    starTestRun = time.time_ns()
     TestRunTree()
-    endTestRun = timer()
+    endTestRun = time.time_ns()
     print( "Test Run Time : %fs \n"%(endTestRun- starTestRun))
 
 if __name__ == '__main__':
