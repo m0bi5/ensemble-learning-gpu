@@ -53,7 +53,8 @@ class DecisionTree(object):
         :param _group:
         :return:
         """
-        class_labels, count = np.unique(_group[:,-1], return_counts= True)
+        #print(_group[:,-1])
+        class_labels, count = np.unique(_group[:,-1], return_counts= True)        
         return class_labels[np.argmax(count)]
 
     def split(self, index, val, data):
@@ -68,10 +69,10 @@ class DecisionTree(object):
         data_right = np.array([]).reshape(0, self.train_data.shape[1])
 
         for row in data:
-            if row[index] <= val :
+            if row[index] < val :
                 data_left = np.vstack((data_left,row))
 
-            if row[index] > val:
+            else: #if row[index] > val:
                 data_right = np.vstack((data_right, row))
 
         return data_left, data_right
