@@ -52,6 +52,7 @@ def TestRunTree():
         y_pred = gpu_sequential.predict(x_test)
         gpu_sequential_acc = accuracy_score(y_test, y_pred)
         end_gpu_sequential = time.time_ns()
+        
         #Parallel GPU
         start_gpu_parallel = time.time_ns()
         gpu_parallel.fit(x_train, y_train)
