@@ -1,11 +1,25 @@
 import numpy as np
+import numba as nb
+
+@nb.njit
+def numba_sum(arr):
+  s = 0 
+  for i in range(len(arr)):
+    s += arr[i]
+  return s
+
+@nb.njit
+def numba_max(arr):
+  return np.argmax(arr)
+
 class DecisionTree(object):
     """
     Class to create decision tree model (CART)
     """
-    def __init__(self, _max_depth, _min_splits):
+    def __init__(self, _max_depth, _min_splits, _gpu=False):
         self.max_depth = _max_depth
         self.min_splits = _min_splits
+        self.gpu = _gpu
 
     def fit(self, _feature, _label):
         """
@@ -39,8 +53,14 @@ class DecisionTree(object):
                 continue
             score = 0.0
             for label in class_labels:
-                porportion = (group[:,-1] == label).sum() / size
-                score += porportion * porportion
+                to_sum = (group[:,-1] == label)
+                _sum = 0
+                if self.gpu:
+                    _sum = numba_sum(np.array(to_sum))
+                else:
+                    _sum = sum(to_sum)
+                proportion =  _sum / size
+                score += proportion * proportion
             gini_score += (1.0 - score) * (size/num_sample)
 
         return gini_score
@@ -54,8 +74,13 @@ class DecisionTree(object):
         :return:
         """
         #print(_group[:,-1])
-        class_labels, count = np.unique(_group[:,-1], return_counts= True)        
-        return class_labels[np.argmax(count)]
+        class_labels, count = np.unique(_group[:,-1], return_counts= True)  
+        _max = None
+        if self.gpu:
+          _max = numba_max(np.array(count))
+        else:
+          _max = np.argmax(count)      
+        return class_labels[_max]
 
     def split(self, index, val, data):
         """
@@ -192,3 +217,27 @@ class DecisionTree(object):
             self.predicted_label = np.append(self.predicted_label, self._predict(self.root,idx))
 
         return self.predicted_label
+
+
+#GPU 
+model = DecisionTree(2,5,True)
+s = timer()
+model.fit(x_train, y_train)
+e = timer()
+print(e-s)
+
+print(accuracy_score(
+    y_true=y_test,
+    y_pred=model.predict(x_test)
+))
+ 
+#CPU
+model = DecisionTree(2,5,False)
+s = timer()
+model.fit(x_train, y_train)
+e = timer()
+print(e-s)
+print(accuracy_score(
+    y_true=y_test,
+    y_pred=model.predict(x_test)
+))
