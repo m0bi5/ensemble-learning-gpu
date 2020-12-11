@@ -1,3 +1,5 @@
+# Timing
+from timeit import default_timer as timer
 import numpy as np
 import numba as nb
 
@@ -219,25 +221,41 @@ class DecisionTree(object):
         return self.predicted_label
 
 
-#GPU 
-model = DecisionTree(2,5,True)
-s = timer()
-model.fit(x_train, y_train)
-e = timer()
-print(e-s)
 
-print(accuracy_score(
-    y_true=y_test,
-    y_pred=model.predict(x_test)
-))
- 
-#CPU
-model = DecisionTree(2,5,False)
-s = timer()
-model.fit(x_train, y_train)
-e = timer()
-print(e-s)
-print(accuracy_score(
-    y_true=y_test,
-    y_pred=model.predict(x_test)
-))
+from sklearn.datasets import load_iris
+from sklearn.model_selection import train_test_split
+
+from sklearn.metrics import accuracy_score
+
+def main():
+    dataset = load_iris()  
+    X = dataset.data
+    y = dataset.target
+    x_train, x_test, y_train, y_test = train_test_split(X, y, random_state=0)
+
+    #GPU 
+    model = DecisionTree(2,5,True)
+    s = timer()
+    model.fit(x_train, y_train)
+    e =  timer()
+    print("Tree GPU Time: {0:1.6f}s ".format(e- s))
+    print(accuracy_score(
+        y_true=y_test,
+        y_pred=model.predict(x_test)
+    ))
+    
+    #CPU
+    model = DecisionTree(2,5,False)
+    s =  timer()
+    model.fit(x_train, y_train)
+    e =  timer()
+    print("Tree CPU Time: {0:1.6f}s ".format(e- s))
+    print(accuracy_score(
+        y_true=y_test,
+        y_pred=model.predict(x_test)
+    ))
+
+
+if __name__ == '__main__':
+	main()
+

@@ -5,6 +5,14 @@
 ## Instalation / setup
 if needed 
 
-# Usage  Examples
+## Usage  Examples
 
-# Development setup
+## Development setup
+
+## Data Set
+Red wine 
+
+fixed acidity,volatile acidity,citric acid,residual sugar,chlorides,free sulfur dioxide,total sulfur dioxide,density,pH,sulphates,alcohol,quality
+Features
+
+Classes 
