@@ -7,6 +7,11 @@ import numpy as np
 from random import seed
 from random import randrange
 
+"""
+Pull functions to be paralleized up here 
+"""
+
+
 class BaggingTreeClassifier(object):
     """
     Class to create a bagging treee classifier
@@ -109,20 +114,24 @@ class BaggingTreeClassifier(object):
         :param group: 
         :return  set out:
         """
-        out = [row[-1] for row in group]
-        return max(set(out), key = out.count)
+        
+        classes = group[:, -1].tolist() 
+        
+        
+        return max(set(group[-1]), key = classes.count)
     
     def split(self,  node, depth):
         """
         :param node: 
         :param depth: 
         """
+        
         left, right = node['groups']
         # free up node groups
         del (node['groups'])
         #print(left.size, right.size)
         # Check if there are no splits 
-        if not left.size == 0 or not right.size == 0:
+        if not isinstance(left,np.ndarray) or not isinstance(right,np.ndarray):
             node['left'] = node['right'] = self.to_terminal_Node(np.vstack((left , right)))
             return
         #  Check max depth
@@ -130,11 +139,11 @@ class BaggingTreeClassifier(object):
             node['left'], node['right'] = self.to_terminal_Node(left), self.to_terminal_Node(right)             
 
         # Left branch
-        if len(left) <= self.min_size:
+        if left[:,-1].size <= self.min_size:
             node['left'] = self.to_terminal_Node(left)
 
         # Right Branch
-        if len(right) <= self.min_size:
+        if right[:,-1].size <= self.min_size:
             node['right'] = self.to_terminal_Node(right)
         
         # The rest recursively             
@@ -189,14 +198,14 @@ from sklearn.metrics import accuracy_score
 
 def main():
     dataset = load_iris()  
-    print (type(dataset))
+    #print (type(dataset))
     X = dataset.data
     y = dataset.target
     x_train, x_test, y_train, y_test = train_test_split(X, y, random_state=0)
     #train , test =  train_test_split(dataset, test_size=0.2)
-    print (x_train.shape, y_train.shape)
+    #print (x_train.shape, y_train.shape)
     #GPU 
-    model = BaggingTreeClassifier(5, 2, 4, 5)
+    model = BaggingTreeClassifier(_max_depth =2, _min_size=2, _sample_size = x_test.shape[0], _n_trees = 5)
     s = timer()
     trees = model.fit(np.column_stack((x_train,  y_train)))
     e =  timer()
@@ -205,17 +214,20 @@ def main():
         y_true=y_test,
         y_pred=model.predict(trees, x_test)
     ))
-    
+    from sklearn.ensemble import BaggingClassifier
+    from sklearn.tree import DecisionTreeClassifier
+    model = BaggingClassifier(base_estimator=DecisionTreeClassifier(max_depth=2),n_estimators=5, max_samples=x_test.shape[0]).fit(x_train,  y_train)
+    #clf.predict(y_test)
     #CPU
     #model = DecisionTree(2,5,False)
     #s =  timer()
     #model.fit(x_train, y_train)
     #e =  timer()
     #print("Tree CPU Time: {0:1.6f}s ".format(e- s))
-    #print(accuracy_score(
-    #    y_true=y_test,
-    #    y_pred=model.predict(x_test)
-    #))
+    print(accuracy_score(
+        y_true=y_test,
+        y_pred=model.predict(x_test)
+    ))
 
 
 if __name__ == '__main__':
