@@ -6,7 +6,11 @@ import numpy as np
 #import numba as nb
 from random import seed
 from random import randrange
+from decision_tree import DecisionTree
+from statistics import mode
+import random
 
+'''
 class BaggingTreeClassifier(object):
     """
     Class to create a bagging treee classifier
@@ -183,41 +187,34 @@ class BaggingTreeClassifier(object):
         predictions = [self.bag_predict(trees, row) for row in x_test]
         return predictions
 
-from sklearn.datasets import load_iris
-from sklearn.model_selection import train_test_split
-from sklearn.metrics import accuracy_score
+'''
 
-def main():
-    dataset = load_iris()  
-    print (type(dataset))
-    X = dataset.data
-    y = dataset.target
-    x_train, x_test, y_train, y_test = train_test_split(X, y, random_state=0)
-    #train , test =  train_test_split(dataset, test_size=0.2)
-    print (x_train.shape, y_train.shape)
-    #GPU 
-    model = BaggingTreeClassifier(5, 2, 4, 5)
-    s = timer()
-    trees = model.fit(np.column_stack((x_train,  y_train)))
-    e =  timer()
-    print("Tree GPU Time: {0:1.6f}s ".format(e- s))
-    print(accuracy_score(
-        y_true=y_test,
-        y_pred=model.predict(trees, x_test)
-    ))
+
+class Bagging():
+    def __init__(self, base_clf, n):
+        self.clfs = []
+        self.n = n
+        for i in range(n):
+            self.clfs.append(base_clf)
     
-    #CPU
-    #model = DecisionTree(2,5,False)
-    #s =  timer()
-    #model.fit(x_train, y_train)
-    #e =  timer()
-    #print("Tree CPU Time: {0:1.6f}s ".format(e- s))
-    #print(accuracy_score(
-    #    y_true=y_test,
-    #    y_pred=model.predict(x_test)
-    #))
-
-
-if __name__ == '__main__':
-	main()
-
+    def resample(self, data):
+        return random.choices(data, k=len(data))
+    
+    def fit(self, x_train, y_train):
+        dataset = list(zip(x_train, y_train))
+        for i in range(self.n):
+            resampled = self.resample(dataset)
+            x_train, y_train = list(zip(*resampled))
+            self.clfs[i].fit(x_train, y_train)
+    
+    def predict(self, x_test):
+        y_preds = []
+        for i in range(len(x_test)):
+            row_pred = []
+            for j in range(self.n):
+                row_pred.append(self.clfs[j].predict([x_test[i]]))
+            try:
+                y_preds.append(mode(row_pred))
+            except:
+                y_preds.append(random.choice(row_pred))
+        return y_preds

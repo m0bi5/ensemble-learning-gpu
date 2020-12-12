@@ -5,38 +5,48 @@ from sklearn.model_selection import train_test_split
 from decision_tree import DecisionTree
 from sklearn.metrics import accuracy_score
 from sklearn.tree import DecisionTreeClassifier
+from ensemble import Bagging
 import numpy as np
 import random
 import time
+import pandas as pd
 
 def TestRunTree():
     #Dataset
-    dataset = load_iris()
+    wine = pd.read_csv("red_wine.csv")
+    X = wine.drop('quality', axis=1)
+    y = wine['quality']
+    x_train, x_test, y_train, y_test = train_test_split(X, y, random_state=0)
+    x_train = x_train.values[:500]
+    y_train = y_train.values[:500]
+    x_test = x_test.values[:500]
+    y_test = y_test.values[:500]
+    '''
+    dataset = load_iris()  
+    print (type(dataset))
     X = dataset.data
     y = dataset.target
     x_train, x_test, y_train, y_test = train_test_split(X, y, random_state=0)
-    classes = 3
+    '''
     #Classifiers
-    cpu_sequential = DecisionTree(_max_depth = 2, _min_splits = 5)
-    cpu_parallel = DecisionTreeClassifier(max_depth=10)
-    gpu_sequential = DecisionTreeClassifier(max_depth=10)
-    gpu_parallel = DecisionTreeClassifier(max_depth=10)
-    train_dataset = list(zip(x_train, y_train))
-    test_dataset = list(zip(x_test, y_test))
+    base_clf = DecisionTree(_max_depth=2, _min_splits=8, _gpu=False)
+    base_clf_parallel = DecisionTree(_max_depth=2, _min_splits=8, _gpu=True)
+    cpu_sequential = Bagging(base_clf=base_clf, n=5)
+    cpu_parallel = base_clf
+    gpu_sequential = Bagging(base_clf=base_clf_parallel, n=5)
+    gpu_parallel = base_clf_parallel
     #Use 10% of data, 20%, 30% .....
     #Helps determine speedup achieved vs dataset size
-    for i in range(10, 101, 10):
-        train_batch_len = i/100 * len(train_dataset)
-        test_batch_len = i/100 * len(test_dataset)
-        #Generate i% subset of data
-        train_batch = random.choices(train_dataset, k=int(train_batch_len))
-        test_batch = random.choices(test_dataset, k=int(test_batch_len))
-        x_train, y_train = zip(*train_batch)
-        x_test, y_test = zip(*test_batch)
+    for i in range(30, 101, 33):
+        train_batch_len = int(i/100 * len(x_train))
+        test_batch_len = int(i/100 * len(x_test))
+        x_train, y_train = x_train[:train_batch_len], y_train[:train_batch_len]
+        x_test, y_test = x_test[:test_batch_len], y_test[:test_batch_len]
         #Sequential CPU
         start_cpu_sequential = time.time_ns()
         cpu_sequential.fit(x_train, y_train)
         y_pred = cpu_sequential.predict(x_test)
+        print(y_pred)
         cpu_sequential_acc = accuracy_score(y_test, y_pred)
         end_cpu_sequential = time.time_ns()
         #Parallel CPU
@@ -50,6 +60,7 @@ def TestRunTree():
         gpu_sequential.fit(x_train, y_train)
         
         y_pred = gpu_sequential.predict(x_test)
+        print(y_pred)
         gpu_sequential_acc = accuracy_score(y_test, y_pred)
         end_gpu_sequential = time.time_ns()
         
