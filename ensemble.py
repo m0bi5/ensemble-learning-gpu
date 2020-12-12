@@ -13,8 +13,10 @@ class BaggingTreeClassifier(object):
     """
     def __init__(self, _max_depth, _min_size, _sample_size, _n_trees):
         """
-        :param :
-        :param :
+        :param  _max_depth:
+        :param _min_size :
+        :param _sample_size:
+        :param _n_trees:
         """
         self.max_depth = _max_depth
         self.min_size = _min_size
@@ -23,9 +25,8 @@ class BaggingTreeClassifier(object):
 
     def subsample(self, dataset):
         """
-        :param :
-        :param :
-        :return:
+        :param dataset:
+        :return sample:
         """   
         sample = list()
         n_nample = round(len(dataset) * self.sample_size) 
@@ -36,8 +37,8 @@ class BaggingTreeClassifier(object):
 
     def fit(self, train ):
         """
-        :param : 
-        
+        :param train: 
+        : return trees:
         """
 
         trees = list()#np.empty(shape = 1)
@@ -50,9 +51,9 @@ class BaggingTreeClassifier(object):
 
     def gini_index(self, groups ,classes):
         """
-        :param :
-        :param :
-        :return :   
+        :param groups:
+        :param classes:
+        :return gini:   
         """
         n_instances = float (sum(len(group) for group in groups))
         gini = 0.0
@@ -72,9 +73,10 @@ class BaggingTreeClassifier(object):
 
     def test_split(self, index, value, dataset):
         """
-        :param :
-        :param :
-        :return:
+        :param index:
+        :param value:
+        :param dataset:
+        :return branch dict:
         """
         left = list()
         right = list()
@@ -87,7 +89,7 @@ class BaggingTreeClassifier(object):
 
     def get_split(self, dataset):
         """
-        :param : 
+        :param dataset: 
         :return:
         """
         #print (dataset.shape)
@@ -104,16 +106,16 @@ class BaggingTreeClassifier(object):
 
     def to_terminal_Node(self, group):
         """
-        :param : 
-        :return :
+        :param group: 
+        :return  set out:
         """
         out = [row[-1] for row in group]
         return max(set(out), key = out.count)
     
     def split(self,  node, depth):
         """
-        :param : 
-        
+        :param node: 
+        :param depth: 
         """
         left, right = node['groups']
         # free up node groups
@@ -143,8 +145,7 @@ class BaggingTreeClassifier(object):
 
     def build_tree(self, train):
         """
-        :param :
-        :param :
+        :param train:        
         :return: root
         """ 
         root = self.get_split(train)
@@ -152,6 +153,11 @@ class BaggingTreeClassifier(object):
         return root
 
     def tree_predict(self, node, row):
+        """
+        :param node:
+        :param row:
+        :return: nodes/ branch
+        """ 
         if row[node['index']] < node['value']:
             if isinstance(node['left'], dict):
                 return self.tree_predict(node['left'], row)
@@ -163,9 +169,10 @@ class BaggingTreeClassifier(object):
             else:
                 return node['right']
 
-    def bag_predict(self, trees,row):
+    def bag_predict(self, trees, row):
         """
-        :param :
+        :param trees:
+        :param row:
         :return: tree_predictions
         """
         tree_predictions = [self.tree_predict(tree, row) for tree in trees ] 
