@@ -36,6 +36,7 @@ class DecisionTree(object):
         
         
         self.build_tree()
+        return self
 
 
     def compute_gini_similarity(self, groups, class_labels):
