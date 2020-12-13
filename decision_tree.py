@@ -36,6 +36,7 @@ class DecisionTree(object):
         
         
         self.build_tree()
+        return self
 
 
     def compute_gini_similarity(self, groups, class_labels):
@@ -78,10 +79,13 @@ class DecisionTree(object):
         #print(_group[:,-1])
         class_labels, count = np.unique(_group[:,-1], return_counts= True)  
         _max = None
-        if self.gpu:
-          _max = numba_max(np.array(count))
-        else:
-          _max = np.argmax(count)      
+        try:
+            if self.gpu:
+                _max = numba_max(np.array(count))
+            else:
+                _max = np.argmax(count)      
+        except:
+            return None
         return class_labels[_max]
 
     def split(self, index, val, data):
@@ -111,9 +115,9 @@ class DecisionTree(object):
         :return best_split result dict:
         """
         class_labels = np.unique(data[:,-1])
-        best_index = 999
-        best_val = 999
-        best_score = 999
+        best_index = float('inf')
+        best_val = float('inf')
+        best_score = float('inf')
         best_groups = None
        
         for idx in range(data.shape[1]-1):
@@ -150,6 +154,7 @@ class DecisionTree(object):
         :return:
         """
         left_node , right_node = node['groups']
+
         del(node['groups'])
 
         if not isinstance(left_node,np.ndarray) or not isinstance(right_node,np.ndarray):
@@ -201,7 +206,6 @@ class DecisionTree(object):
                 return self._predict(node['left'], row)
             else:
                 return node['left']
-
         else:
             if isinstance(node['right'],dict):
                 return self._predict(node['right'],row)
@@ -219,43 +223,4 @@ class DecisionTree(object):
             self.predicted_label = np.append(self.predicted_label, self._predict(self.root,idx))
 
         return self.predicted_label
-
-
-
-from sklearn.datasets import load_iris
-from sklearn.model_selection import train_test_split
-
-from sklearn.metrics import accuracy_score
-
-def main():
-    dataset = load_iris()  
-    X = dataset.data
-    y = dataset.target
-    x_train, x_test, y_train, y_test = train_test_split(X, y, random_state=0)
-
-    #GPU 
-    model = DecisionTree(2,5,True)
-    s = timer()
-    model.fit(x_train, y_train)
-    e =  timer()
-    print("Tree GPU Time: {0:1.6f}s ".format(e- s))
-    print(accuracy_score(
-        y_true=y_test,
-        y_pred=model.predict(x_test)
-    ))
-    
-    #CPU
-    model = DecisionTree(2,5,False)
-    s =  timer()
-    model.fit(x_train, y_train)
-    e =  timer()
-    print("Tree CPU Time: {0:1.6f}s ".format(e- s))
-    print(accuracy_score(
-        y_true=y_test,
-        y_pred=model.predict(x_test)
-    ))
-
-
-if __name__ == '__main__':
-	main()
 
