@@ -2,6 +2,10 @@
 
 ## About
 
+### Authors
+* **Mohit Bhasi Thazhath**
+* **Cody Crofford**
+
 ## Instalation / setup
 if needed 
 
@@ -16,3 +20,6 @@ fixed acidity,volatile acidity,citric acid,residual sugar,chlorides,free sulfur 
 Features
 
 Classes 
+
+# Refrences
+{% bibliography %}(references.bib)
