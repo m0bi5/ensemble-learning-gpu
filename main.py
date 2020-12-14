@@ -6,8 +6,9 @@ from decision_tree import DecisionTree
 from sklearn.metrics import accuracy_score
 from sklearn.tree import DecisionTreeClassifier
 from ensemble import Bagging
+from ensemble_GPU import DecisionTreeGPU, BaggingGPU
 import numpy as np
-from arboretum import RFClassifier
+#from arboretum import RFClassifier
 import random
 import time
 import pandas as pd
@@ -38,8 +39,8 @@ def TestRunTree():
         #Classifiers
         cpu_sequential = Bagging(n=10, parallel=False, gpu=False)
         cpu_parallel = Bagging(n=10, parallel=True, gpu=False)
-        gpu_sequential = Bagging(n=10, gpu=True, parallel=False)
-        gpu_parallel = Bagging(n=10, parallel=True, gpu=True)
+        gpu_sequential = BaggingGPU(n=10, gpu=True)
+        gpu_parallel = BaggingGPU(n=10, gpu=True)
 
         train_batch_len = int(i/100 * train_og_length)
         test_batch_len = int(i/100 * test_og_length)
