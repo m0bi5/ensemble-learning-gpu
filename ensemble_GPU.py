@@ -8,24 +8,20 @@ from math import exp, ceil
 from statistics import mode
 from  numba import cuda, float32, int32, jit, njit, vectorize,prange
 import random
-# Things to make Parrallel
-# sum
+import multiprocessing
 
-# Serial
-#@vectorize(['float32 (float32[:])'], target='cuda')
-#def numba_sum_arrayS(arr):
-#   return arr.sum()  
+def worker(clf, x_train, y_train):
+    dataset = list(zip(x_train, y_train))
+    resampled = self.resample(dataset)
+    x_train, y_train = list(zip(*resampled))
+    clf.fit(x_train, y_train)
+
 
 # Parrallel
 @cuda.jit
 def numba_sum_arrayP(arr,s):
     i = cuda.grid(1)    
     cuda.atomic.add(s,0,arr[i])
-
-# Serial
-#@vectorize(['float32[:](float32[:], float32[:])'], target='cuda')
-#def Numba_array_mult(A,B):
-#    return A * B
 
 
 # Array Multiplication Parrallel
@@ -37,7 +33,7 @@ def Numba_array_mult_wKern(in1,in2,out):
     height = out.shape[0]
     for i in range(row, height, bgp):
         out[i]= in1[i] * in2[i]
-# Len()
+
 
 # Scalar Mult and Addition serial
 @vectorize(['float32(float32, float32)'], target='cuda')    
@@ -48,13 +44,8 @@ def numbaScalarMult(A, B):
 @vectorize(['float32 (float32, float32, int32)'], target='cuda')
 def gini_score_v(score, size, num_sample):
     return (1 - score) * (size/num_sample)
-    #return gini_score
+ 
 
-# adding two  branches / Nodes 
-
-# incrementers
-
-# Random choise
 @njit()
 def numba_sum(arr):    
     s = 0 
@@ -288,10 +279,10 @@ class DecisionTreeGPU(object):
 
 class BaggingGPU():
     #@vectorize([''])
-    def __init__(self, n,  gpu=False):
+    def __init__(self, n,  parallel=False, gpu=False):
         self.clfs = []
         self.n = n
-        #self.parallel = parallel
+        self.parallel = parallel
         for i in range(n):
             self.clfs.append(DecisionTreeGPU(_max_depth=2, _min_splits=6, _gpu=gpu))            
        
@@ -300,10 +291,21 @@ class BaggingGPU():
     
     def fit(self, x_train, y_train):
         dataset = list(zip(x_train, y_train))
-        for i in range(self.n):
-            resampled = self.resample(dataset)
-            x_train, y_train = list(zip(*resampled))
-            self.clfs[i].fit(x_train, y_train)
+        if self.parallel == False:
+            for i in range(self.n):
+                resampled = self.resample(dataset)
+                x_train, y_train = list(zip(*resampled))
+                self.clfs[i].fit(x_train, y_train)
+        else:
+            #Create one process for each tree
+            pool = multiprocessing.Pool(self.n)
+            for i in range(self.n):
+                self.clfs[i] = pool.apply_async(self.clfs[i].fit, (x_train, y_train))
+            
+            for i in range(self.n):
+                self.clfs[i] = self.clfs[i].get()
+            
+            pool.close()
     
     def predict(self, x_test):
         y_preds = []

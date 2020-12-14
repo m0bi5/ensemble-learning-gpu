@@ -39,8 +39,8 @@ def TestRunTree():
         #Classifiers
         cpu_sequential = Bagging(n=10, parallel=False, gpu=False)
         cpu_parallel = Bagging(n=10, parallel=True, gpu=False)
-        gpu_sequential = BaggingGPU(n=10, gpu=True)
-        gpu_parallel = BaggingGPU(n=10, gpu=True)
+        gpu_sequential = BaggingGPU(n=10, parallel=False, gpu=True)
+        gpu_parallel = BaggingGPU(n=10,parallel=True, gpu=True)
 
         train_batch_len = int(i/100 * train_og_length)
         test_batch_len = int(i/100 * test_og_length)
