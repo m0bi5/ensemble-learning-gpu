@@ -6,20 +6,21 @@
 * **Mohit Bhasi Thazhath**
 * **Cody Crofford**
 
-## Instalation / setup
-if needed 
-
-## Usage  Examples
+## Running instructions
+```
+chmod +x setup.sh
+./setup.sh
+python3 main.py
+```
+NOTE: You will need python 3.7+ to run the code. 
 
 ## Development setup
 
-## Data Set
-Red wine 
+## Dataset
 
-fixed acidity,volatile acidity,citric acid,residual sugar,chlorides,free sulfur dioxide,total sulfur dioxide,density,pH,sulphates,alcohol,quality
-Features
+<a href="https://web.stanford.edu/class/archive/cs/cs109/cs109.1166/problem12.html">Titanic dataset obtained from Stanford</a>
 
-Classes 
+The code implemented performed a binary classification task on the Titanic dataset to figure out which passenger survived the sinking. 
 
 # Refrences
 {% bibliography %}(references.bib)
