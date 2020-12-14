@@ -288,10 +288,10 @@ class DecisionTreeGPU(object):
 
 class BaggingGPU():
     #@vectorize([''])
-    def __init__(self, n,  gpu=False):
+    def __init__(self, n,  gpu=False, parallel=False):
         self.clfs = []
         self.n = n
-        #self.parallel = parallel
+        self.parallel = parallel
         for i in range(n):
             self.clfs.append(DecisionTreeGPU(_max_depth=2, _min_splits=6, _gpu=gpu))            
        

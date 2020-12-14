@@ -48,34 +48,34 @@ def TestRunTree():
         x_test, y_test = x_test[:test_batch_len], y_test[:test_batch_len]
 
         #Sequential CPU
-        start_cpu_sequential = time.time_ns()
+        start_cpu_sequential = time.time()
         cpu_sequential.fit(x_train, y_train)
         y_pred = cpu_sequential.predict(x_test)
         cpu_sequential_acc = accuracy_score(y_test, y_pred)
-        end_cpu_sequential = time.time_ns()
+        end_cpu_sequential = time.time()
 
         #Parallel CPU
-        start_cpu_parallel = time.time_ns()
+        start_cpu_parallel = time.time()
         cpu_parallel.fit(x_train, y_train)
         y_pred = cpu_parallel.predict(x_test)
         cpu_parallel_acc = accuracy_score(y_test, y_pred)
-        end_cpu_parallel = time.time_ns()
+        end_cpu_parallel = time.time()
 
         #Sequential GPU
         gpu_sequential.fit(x_train, y_train)  #Warmup GPU run, don't time it
-        start_gpu_sequential = time.time_ns()
+        start_gpu_sequential = time.time()
         gpu_sequential.fit(x_train, y_train)
         y_pred = gpu_sequential.predict(x_test)
         gpu_sequential_acc = accuracy_score(y_test, y_pred)
-        end_gpu_sequential = time.time_ns()
+        end_gpu_sequential = time.time()
         
         #Parallel GPU
         gpu_parallel.fit(x_train, y_train)  #Warmup GPU run, don't time it
-        start_gpu_parallel = time.time_ns()
+        start_gpu_parallel = time.time()
         gpu_parallel.fit(x_train, y_train)
         y_pred = gpu_parallel.predict(x_test)
         gpu_parallel_acc = accuracy_score(y_test, y_pred)
-        end_gpu_parallel = time.time_ns()
+        end_gpu_parallel = time.time()
 
         print(
             'Run Count ', i ,':\n',
@@ -89,9 +89,9 @@ def TestRunTree():
     
 
 def main():
-    starTestRun = time.time_ns()
+    starTestRun = time.time()
     TestRunTree()
-    endTestRun = time.time_ns()
+    endTestRun = time.time()
     print( "Test Run Time : %fs \n"%(endTestRun- starTestRun))
 
 if __name__ == '__main__':
